@@ -235,27 +235,26 @@
                 });
         }
 
-        function handleLogin() {
+      function handleLogin() {
             const role = document.getElementById('role-select').value;
             const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim(); // এই লাইনে পাসওয়ার্ড ইনপুট নেওয়া হচ্ছে
+            const password = document.getElementById('password').value.trim();
 
-            // ১. অ্যাডমিন লগইন যাচাই
+            // অ্যাডমিন লগইন যাচাই
             if (role === 'admin') {
-                // নিচে 'admin1234' এর জায়গায় আপনার পছন্দের অ্যাডমিন পাসওয়ার্ড দিন
-                if (username.toLowerCase() === 'admin' && password === 'admin1234') {
+                if (username.toLowerCase() === 'admin' && password === 'admin1234') { // আপনার অ্যাডমিন পাসওয়ার্ড
                     showSection('admin-section');
                     renderAdminDashboard();
                 } else {
                     alert('ভুল অ্যাডমিন ইউজারনাম অথবা পাসওয়ার্ড!');
                 }
             } 
-            // ২. সাধারণ সদস্য (Member) লগইন যাচাই
+            // সাধারণ সদস্য (Member) লগইন যাচাই
             else if (role === 'member') {
                 const member = members.find(m => m.id.toLowerCase() === username.toLowerCase());
                 if (member) {
-                    // নিচে 'member123' এর জায়গায় সদস্যদের জন্য একটি কমন পাসওয়ার্ড সেট করতে পারেন
-                    if (password === 'member123') {
+                    // এখানে এখন আর কোনো ফিক্সড পাসওয়ার্ড নেই, গুগল শীট থেকে আসা ওই মেম্বারের নিজস্ব পাসওয়ার্ড মেলানো হচ্ছে
+                    if (password === member.password) {
                         currentLoggedInUser = member;
                         showSection('member-section');
                         renderMemberDashboard();

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ফ্রেন্ড মিশন সমবায় সমিতি</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Hind Siliguri', sans-serif; }</style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- লোডিং স্ক্রিন -->
+    <div id="loading-screen" class="fixed inset-0 bg-white bg-opacity-90 flex flex-col items-center justify-center z-50">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mb-4"></div>
+        <p class="text-lg font-semibold text-gray-700">ফ্রেন্ড মিশন সমবায় সমিতি - ডাটা লোড হচ্ছে...</p>
+    </div>
+
+    <!-- লগইন সেকশন -->
+    <div id="login-section" class="hidden flex flex-col items-center justify-center min-h-screen px-4">
+        <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-md border-t-4 border-emerald-600">
+            <h2 class="text-2xl font-bold text-center text-emerald-600 mb-2">ফ্রেন্ড মিশন সমবায় সমিতি</h2>
+            <p class="text-center text-gray-500 mb-6 text-sm">অনলাইন ম্যানেজমেন্ট পোর্টাল</p>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">ইউজার টাইপ</label>
+                <select id="role-select" class="w-full p-3 border rounded-lg">
+                    <option value="admin">অ্যাডমিন / স্টাফ (Admin)</option>
+                    <option value="member">সাধারণ সদস্য (Member)</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-semibold mb-2">ইউজারনাম / আইডি</label>
+                <input type="text" id="username" placeholder="অ্যাডমিন: admin, মেম্বার: M001" class="w-full p-3 border rounded-lg">
+            </div>
+            <div class="mb-6">
+                <label class="block text-gray-700 font-semibold mb-2">পাসওয়ার্ড</label>
+                <input type="password" id="password" placeholder="যেকোনো পাসওয়ার্ড" class="w-full p-3 border rounded-lg">
+            </div>
+            <button onclick="handleLogin()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition">লগইন করুন</button>
+        </div>
+    </div>
+
+    <!-- অ্যাডমিন সেকশন -->
+    <div id="admin-section" class="hidden min-h-screen flex flex-col">
+        <nav class="bg-emerald-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
+            <h1 class="text-xl font-bold">ফ্রেন্ড মিশন সমবায় সমিতি (অ্যাডমিন প্যানেল)</h1>
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded font-semibold">লগআউট</button>
+        </nav>
+
+        <div class="p-6 max-w-7xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6 flex-grow">
+            <div class="md:col-span-1 space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">নতুন সদস্য নিবন্ধন</h3>
+                    <input type="text" id="member-name" placeholder="সদস্যের নাম" class="w-full p-2 border rounded mb-3">
+                    <input type="text" id="member-phone" placeholder="মোবাইল নম্বর" class="w-full p-2 border rounded mb-3">
+                    <button onclick="addMember()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-semibold">সদস্য যুক্ত করুন</button>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">জমা / কিস্তি এন্ট্রি</h3>
+                    <select id="tx-member" class="w-full p-2 border rounded mb-3"></select>
+                    <input type="number" id="tx-amount" placeholder="টাকার পরিমাণ" class="w-full p-2 border rounded mb-3">
+                    <button onclick="addTransaction()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded font-semibold">লেনদেন সেভ করুন</button>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl shadow">
+                        <p class="text-sm opacity-90">মোট সদস্য</p>
+                        <h4 id="total-members-count" class="text-2xl font-bold">Loading...</h4>
+                    </div>
+                    <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white p-4 rounded-xl shadow">
+                        <p class="text-sm opacity-90">মোট ফান্ড</p>
+                        <h4 id="total-savings-count" class="text-2xl font-bold">Loading...</h4>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">সদস্য তালিকা (লাইভ গুগল শীট)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700">
+                                    <th class="p-3 border">আইডি</th>
+                                    <th class="p-3 border">নাম</th>
+                                    <th class="p-3 border">মোবাইল</th>
+                                    <th class="p-3 border">মোট সঞ্চয়</th>
+                                    <th class="p-3 border">অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody id="members-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- মেম্বার প্রোফাইল মডাল (অ্যাডমিন দেখতে পাবে) -->
+    <div id="profile-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-lg max-w-md w-full p-6 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 text-2xl font-bold">&times;</button>
+            <h3 class="text-xl font-bold text-emerald-600 mb-4 border-b pb-2 text-center">সদস্যের সম্পূর্ণ প্রোফাইল</h3>
+            
+            <div class="flex flex-col items-center mb-4">
+                <img id="modal-photo" src="https://via.placeholder.com/150?text=No+Photo" class="w-28 h-28 rounded-full border-2 border-emerald-500 object-cover mb-2 shadow-sm" alt="সদস্যের ছবি">
+                <span class="text-xs text-gray-400">অফিসিয়াল ছবি</span>
+            </div>
+
+            <div class="space-y-3 text-sm border-b pb-4">
+                <p><strong>আইডি:</strong> <span id="modal-id"></span></p>
+                <p><strong>নাম:</strong> <span id="modal-name"></span></p>
+                <p><strong>মোবাইল:</strong> <span id="modal-phone"></span></p>
+                <p><strong>এনআইডি (NID):</strong> <span id="modal-nid"></span></p>
+                <p><strong>ঠিকানা:</strong> <span id="modal-address"></span></p>
+                <p><strong>মোট সঞ্চয়:</strong> <span id="modal-savings" class="text-emerald-600 font-bold"></span></p>
+            </div>
+
+            <div class="mt-4 flex flex-col items-center">
+                <span class="text-xs text-gray-500 font-semibold mb-1">সদস্যের স্বাক্ষর:</span>
+                <img id="modal-signature" src="https://via.placeholder.com/150x50?text=No+Signature" class="w-44 h-14 border object-contain bg-gray-50 p-1" alt="স্বাক্ষর">
+            </div>
+        </div>
+    </div>
+
+    <!-- সদস্য সেকশন -->
+    <div id="member-section" class="hidden min-h-screen flex flex-col">
+        <nav class="bg-blue-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
+            <h1 class="text-xl font-bold">ফ্রেন্ড মিশন সমবায় সমিতি (সদস্য পোর্টাল)</h1>
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded font-semibold">লগআউট</button>
+        </nav>
+
+        <div class="p-6 max-w-5xl mx-auto w-full flex-grow grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border md:col-span-1">
+                <h3 class="text-lg font-bold text-blue-600 mb-4 border-b pb-2">প্রোফাইল আপডেট ও ছবি/স্বাক্ষর</h3>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">আপনার নাম</label>
+                        <input type="text" id="edit-name" class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">মোবাইল নম্বর</label>
+                        <input type="text" id="edit-phone" class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">জাতীয় পরিচয়পত্র (NID)</label>
+                        <input type="text" id="edit-nid" class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">বর্তমান ঠিকানা</label>
+                        <textarea id="edit-address" class="w-full p-2 border rounded" rows="2"></textarea>
+                    </div>
+                    <!-- ছবি আপলোড -->
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">আপনার ছবি যুক্ত করুন</label>
+                        <input type="file" id="edit-photo" accept="image/*" class="w-full p-1 border rounded text-xs bg-gray-50" onchange="previewFile(this, 'preview-photo')">
+                        <img id="preview-photo" class="w-16 h-16 rounded-full object-cover mt-2 hidden border">
+                    </div>
+                    <!-- স্বাক্ষর আপলোড -->
+                    <div>
+                        <label class="block font-semibold text-gray-600 mb-1">আপনার স্বাক্ষর যুক্ত করুন</label>
+                        <input type="file" id="edit-signature" accept="image/*" class="w-full p-1 border rounded text-xs bg-gray-50" onchange="previewFile(this, 'preview-sig')">
+                        <img id="preview-sig" class="w-32 h-10 object-contain mt-2 hidden border bg-gray-50">
+                    </div>
+                    
+                    <button onclick="saveMemberProfile()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded font-bold transition">শীটে তথ্য আপডেট করুন</button>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <img id="dashboard-member-photo" src="https://via.placeholder.com/150?text=No+Photo" class="w-16 h-16 rounded-full object-cover border-2 border-blue-500" alt="Profile">
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800">স্বাগতম, <span id="user-display-name" class="text-blue-600"></span></h2>
+                            <p class="text-gray-500 text-sm">মেম্বার আইডি: <span id="user-display-id" class="font-bold"></span></p>
+                        </div>
+                    </div>
+                    <div class="text-right bg-emerald-50 p-4 rounded-lg border border-emerald-200 w-full sm:w-auto">
+                        <h4 class="text-gray-500 font-semibold text-sm">আপনার মোট সঞ্চয়</h4>
+                        <p id="member-savings-balance" class="text-2xl font-bold text-emerald-600 mt-1">০ ৳</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">আপনার সাম্প্রতিক লেনদেন সমূহ (গুগল শীট থেকে)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700">
+                                    <th class="p-3 border">তারিখ</th>
+                                    <th class="p-3 border">ধরণ</th>
+                                    <th class="p-3 border">পরিমাণ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="member-tx-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // আপনার GOOGLE APPS SCRIPT WEB APP URL
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw7fxYi0lFmC_ZFPmfeWLuxc9mtQKtz29ZAwE3RshcTNvduxxafPIws3aVRMndqQFCn/exec"; 
+
+        let members = [];
+        let transactions = [];
+        let currentLoggedInUser = null;
+
+        window.onload = function() {
+            fetchDataFromSheets();
+        };
+
+        // গুগল শীট থেকে ডাটা রিড করা
+        function fetchDataFromSheets() {
+            document.getElementById('loading-screen').classList.remove('hidden');
+            fetch(SCRIPT_URL)
+                .then(res => res.json())
+                .then(data => {
+                    members = data.members.map(m => ({...m, savings: parseFloat(m.savings) || 0}));
+                    transactions = data.transactions;
+                    
+                    document.getElementById('loading-screen').classList.add('hidden');
+                    document.getElementById('login-section').classList.remove('hidden');
+                    
+                    if(!document.getElementById('admin-section').classList.contains('hidden')) renderAdminDashboard();
+                    if(!document.getElementById('member-section').classList.contains('hidden')) renderMemberDashboard();
+                })
+                .catch(err => {
+                    alert("ডাটা লোড করতে সমস্যা হয়েছে! ইউআরএল চেক করুন।");
+                    console.error(err);
+                });
+        }
+
+        function handleLogin() {
+            const role = document.getElementById('role-select').value;
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim(); // এই লাইনে পাসওয়ার্ড ইনপুট নেওয়া হচ্ছে
+
+            // ১. অ্যাডমিন লগইন যাচাই
+            if (role === 'admin') {
+                // নিচে 'admin1234' এর জায়গায় আপনার পছন্দের অ্যাডমিন পাসওয়ার্ড দিন
+                if (username.toLowerCase() === 'admin' && password === 'admin1234') {
+                    showSection('admin-section');
+                    renderAdminDashboard();
+                } else {
+                    alert('ভুল অ্যাডমিন ইউজারনাম অথবা পাসওয়ার্ড!');
+                }
+            } 
+            // ২. সাধারণ সদস্য (Member) লগইন যাচাই
+            else if (role === 'member') {
+                const member = members.find(m => m.id.toLowerCase() === username.toLowerCase());
+                if (member) {
+                    // নিচে 'member123' এর জায়গায় সদস্যদের জন্য একটি কমন পাসওয়ার্ড সেট করতে পারেন
+                    if (password === 'member123') {
+                        currentLoggedInUser = member;
+                        showSection('member-section');
+                        renderMemberDashboard();
+                    } else {
+                        alert('ভুল পাসওয়ার্ড! আবার চেষ্টা করুন।');
+                    }
+                } else {
+                    alert('সদস্য আইডি পাওয়া যায়নি! (উদা: M001)');
+                }
+            }
+        }
+
+        function showSection(sectionId) {
+            document.getElementById('login-section').classList.add('hidden');
+            document.getElementById('admin-section').classList.add('hidden');
+            document.getElementById('member-section').classList.add('hidden');
+            document.getElementById(sectionId).classList.remove('hidden');
+        }
+
+        function logout() {
+            currentLoggedInUser = null;
+            showSection('login-section');
+        }
+
+        function renderAdminDashboard() {
+            const tableBody = document.getElementById('members-table-body');
+            const memberSelect = document.getElementById('tx-member');
+            tableBody.innerHTML = '';
+            memberSelect.innerHTML = '<option value="">সদস্য নির্বাচন করুন</option>';
+
+            let totalSavings = 0;
+            members.forEach(m => {
+                totalSavings += m.savings;
+                tableBody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="p-3 border font-semibold">${m.id}</td>
+                        <td class="p-3 border">${m.name}</td>
+                        <td class="p-3 border">${m.phone}</td>
+                        <td class="p-3 border text-emerald-600 font-bold">${m.savings} ৳</td>
+                        <td class="p-3 border text-center">
+                            <button onclick="viewMemberProfile('${m.id}')" class="bg-emerald-100 text-emerald-700 text-xs px-3 py-1 rounded-full font-bold">বিস্তারিত</button>
+                        </td>
+                    </tr>
+                `;
+                memberSelect.innerHTML += `<option value="${m.id}">${m.name} (${m.id})</option>`;
+            });
+            document.getElementById('total-members-count').innerText = `${members.length} জন`;
+            document.getElementById('total-savings-count').innerText = `${totalSavings} ৳`;
+        }
+
+        function viewMemberProfile(memberId) {
+            const m = members.find(m => m.id === memberId);
+            document.getElementById('modal-id').innerText = m.id;
+            document.getElementById('modal-name').innerText = m.name;
+            document.getElementById('modal-phone').innerText = m.phone;
+            document.getElementById('modal-nid').innerText = m.nid || 'এন্ট্রি নেই';
+            document.getElementById('modal-address').innerText = m.address || 'এন্ট্রি নেই';
+            document.getElementById('modal-savings').innerText = `${m.savings} ৳`;
+            
+            // ছবি ও সিগনেচার মডালে লোড করা
+            document.getElementById('modal-photo').src = m.photo || "https://via.placeholder.com/150?text=No+Photo";
+            document.getElementById('modal-signature').src = m.signature || "https://via.placeholder.com/150x50?text=No+Signature";
+
+            document.getElementById('profile-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('profile-modal').classList.add('hidden'); }
+
+        function addMember() {
+            const name = document.getElementById('member-name').value.trim();
+            const phone = document.getElementById('member-phone').value.trim();
+            if(!name || !phone) return alert('তথ্য দিন');
+
+            const newId = `M00${members.length + 1}`;
+            const payload = { action: "addMember", id: newId, name, phone, savings: 0, nid: "", address: "", photo: "", signature: "" };
+
+            document.getElementById('loading-screen').classList.remove('hidden');
+            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
+                .then(() => {
+                    document.getElementById('member-name').value = '';
+                    document.getElementById('member-phone').value = '';
+                    fetchDataFromSheets();
+                });
+        }
+
+        function addTransaction() {
+            const memberId = document.getElementById('tx-member').value;
+            const amount = parseFloat(document.getElementById('tx-amount').value);
+            if(!memberId || !amount || amount <= 0) return alert('সঠিক তথ্য দিন');
+
+            const payload = {
+                action: "addTransaction",
+                memberId,
+                amount,
+                type: "সঞ্চয় জমা",
+                date: new Date().toLocaleDateString('bn-BD')
+            };
+
+            document.getElementById('loading-screen').classList.remove('hidden');
+            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
+                .then(() => {
+                    document.getElementById('tx-amount').value = '';
+                    fetchDataFromSheets();
+                });
+        }
+
+        function renderMemberDashboard() {
+            const member = members.find(m => m.id === currentLoggedInUser.id);
+            document.getElementById('user-display-name').innerText = member.name;
+            document.getElementById('user-display-id').innerText = member.id;
+            document.getElementById('member-savings-balance').innerText = `${member.savings} ৳`;
+
+            document.getElementById('edit-name').value = member.name;
+            document.getElementById('edit-phone').value = member.phone;
+            document.getElementById('edit-nid').value = member.nid || '';
+            document.getElementById('edit-address').value = member.address || '';
+
+            // ড্যাশবোর্ডে মেম্বারের ছবি দেখানো
+            document.getElementById('dashboard-member-photo').src = member.photo || "https://via.placeholder.com/150?text=No+Photo";
+
+            const txBody = document.getElementById('member-tx-body');
+            txBody.innerHTML = '';
+            const userTx = transactions.filter(t => t.memberid === member.id);
+            
+            if(userTx.length === 0) {
+                txBody.innerHTML = `<tr><td colspan="3" class="p-3 text-center text-gray-400">কোনো লেনদেন নেই</td></tr>`;
+            } else {
+                userTx.forEach(t => {
+                    txBody.innerHTML += `<tr><td class="p-3 border">${t.date}</td><td class="p-3 border">${t.type}</td><td class="p-3 border font-bold text-emerald-600">+ ${t.amount} ৳</td></tr>`;
+                });
+            }
+        }
+
+        // ক্লায়েন্ট সাইডে ছবি প্রিভিউ করার ফাংশন
+        function previewFile(input, previewId) {
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // ফাইলকে Base64 টেক্সটে রূপান্তর করার হেল্পার ফাংশন
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        // মেম্বার প্রোফাইল এডিট ও ছবি/স্বাক্ষর সহ শীটে পাঠানো
+        async function saveMemberProfile() {
+            const member = members.find(m => m.id === currentLoggedInUser.id);
+            document.getElementById('loading-screen').classList.remove('hidden');
+
+            let photoBase64 = member.photo || "";
+            let sigBase64 = member.signature || "";
+
+            const photoFile = document.getElementById('edit-photo').files[0];
+            const sigFile = document.getElementById('edit-signature').files[0];
+
+            // ফাইল থাকলে সেটিকে Base64 করে নেওয়া হচ্ছে
+            if (photoFile) {
+                try { photoBase64 = await fileToBase64(photoFile); } catch(e) { console.error(e); }
+            }
+            if (sigFile) {
+                try { sigBase64 = await fileToBase64(sigFile); } catch(e) { console.error(e); }
+            }
+
+            const payload = {
+                action: "updateProfile",
+                id: currentLoggedInUser.id,
+                name: document.getElementById('edit-name').value.trim(),
+                phone: document.getElementById('edit-phone').value.trim(),
+                nid: document.getElementById('edit-nid').value.trim(),
+                address: document.getElementById('edit-address').value.trim(),
+                photo: photoBase64,
+                signature: sigBase64
+            };
+
+            fetch(SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) })
+                .then(() => {
+                    alert("ছবি ও স্বাক্ষরসহ আপনার প্রোফাইল সফলভাবে আপডেট হয়েছে!");
+                    fetchDataFromSheets();
+                })
+                .catch(err => {
+                    alert("আপডেট করতে সমস্যা হয়েছে।");
+                    document.getElementById('loading-screen').classList.add('hidden');
+                });
+        }
+    </script>
+	<footer class="bg-gray-800 text-gray-300 py-6 text-center text-sm border-t border-gray-700 w-full mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="font-semibold text-white mb-2">© ২০২৬ ফ্রেন্ড মিশন সমবায় সমিতি | সর্বস্বত্ব সংরক্ষিত</p>
+            <p class="text-gray-400 text-xs sm:text-sm">
+                সিস্টেম ডিজাইন ও ডেভলপমেন্টে: 
+                <span class="text-emerald-400 font-bold tracking-wide">Md. Khairul Sheikh</span>
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-6 mt-3 text-xs text-gray-400 border-t border-gray-700/50 pt-3 max-w-md mx-auto">
+                <a href="mailto:hmknc3@gmail.com" class="hover:text-emerald-400 transition flex items-center gap-1">
+                    <span>📧</span> hmknc3@gmail.com
+                </a>
+                <span class="hidden sm:inline text-gray-600">|</span>
+                <a href="tel:01918904907" class="hover:text-emerald-400 transition flex items-center gap-1">
+                    <span>📞</span> 01918 904907
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
